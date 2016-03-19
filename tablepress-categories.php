@@ -8,7 +8,7 @@
  */
 
 /*
-Plugin Name: TablePress Categories
+Plugin Name: TablePress Extension: Categories
 Plugin URI: http://aktivstoff.de/
 Description: Extend TablePress tables with the ability to group rows into categories
 Version: 0.1
@@ -18,7 +18,6 @@ Author email: kontakt@aktivstoff.de
 Text Domain: tablepress
 Domain Path: /i18n
 License: GPL 2
-Donate URI: https://tablepress.org/donate/
 */
 
 // Prohibit direct script loading.
@@ -44,6 +43,8 @@ class TablePress_Category {
     public function __construct() {
         add_shortcode( TablePress_Category::tableShortcode, array(  $this, 'shortcode_table' ) );
         add_shortcode( TablePress_Category::categoryShortcode, array(  $this, 'shortcode_category_placeholder' ) );
+        add_filter( 'tablepress_shortcode_table_default_shortcode_atts', array( $this, 'shortcode_table_default_shortcode_atts' ) );
+        add_filter( 'tablepress_table_render_options', array( $this, 'table_render_options' ), 10, 2 );
         $this->enqueue_script();
     }
 
@@ -53,6 +54,22 @@ class TablePress_Category {
 
         wp_enqueue_script( 'tablepress-categories', $script, array( 'tablepress-datatables' ), false, true );
         wp_enqueue_style( 'tablepress-categories', $style);
+    }
+
+    public static function shortcode_table_default_shortcode_atts( $default_atts ) {
+        $default_atts['category-table'] = true;
+
+        return $default_atts;
+    }
+
+    public static function table_render_options( $render_options, $table ) {
+        if ( $render_options['category-table'] !== true ) {
+            return $render_options;
+        }
+
+        $render_options['use_datatables'] = true;
+
+        return $render_options;
     }
 
     public function shortcode_table( $atts, $content ) {
@@ -76,13 +93,9 @@ class TablePress_Category {
     }
 
     private function tablepress( $atts ) {
-        $attributes = shortcode_atts( array(
-            'id' => null
-        ), $atts );
+        $tablePress = 'table table-category=true';
 
-        $tablePress = 'table';
-
-        foreach( $attributes as $key => $value ) {
+        foreach( $atts as $key => $value ) {
             $tablePress .= " ${key}=\"${value}\"";
         }
 
@@ -117,10 +130,7 @@ class TablePress_Category {
                 window.TABLE_CATEGORIES = {};
             }
 
-            window.TABLE_CATEGORIES[' . $id . '] = {
-                selector: "tablepress-' . $id . '",
-                categories: JSON.parse(\'' . json_encode( $categories ) . '\')
-            };
+            window.TABLE_CATEGORIES["tablepress-' . $id . '"] = JSON.parse(\'' . json_encode( $categories ) . '\');
         </script>';
     }
 

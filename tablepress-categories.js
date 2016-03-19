@@ -1,16 +1,15 @@
 (function ($) {
     'use strict';
 
-    var categorize = function (data) {
-            var $table = $('#' + data.selector).DataTable(),
-                $tableNode = $($table.table().node()),
+    var categorize = function ($tableNode, data) {
+            var $table = $tableNode.DataTable(),
                 $tableBody = $tableNode.find('tbody'),
                 classes = $tableBody.attr('class'),
                 columnCount = $table.columns().nodes().length;
 
             $tableNode.addClass('category-table');
 
-            $.each(data.categories, function (key, category) {
+            $.each(data, function (index, category) {
                 var $tbody = $('<tbody />'),
                     $title = $('<tr class="category-title"><td colspan="' + columnCount + '"><a href="javascript:"><strong>' + category.name + '</strong></a></td></tr>');
 
@@ -39,9 +38,11 @@
             $tableBody.remove();
         };
 
-    $.each(window.TABLE_CATEGORIES, function (key, data) {
-        $('#' + data.selector).on( 'draw.dt', function () {
-            categorize(data);
+    $.each(window.TABLE_CATEGORIES, function (tableId, data) {
+        var $table = $('#' + tableId);
+
+        $table.on( 'draw.dt', function () {
+            categorize($table, data);
         });
     });
 })(jQuery);
