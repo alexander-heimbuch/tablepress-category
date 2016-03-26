@@ -1,6 +1,10 @@
 (function ($) {
     'use strict';
 
+    if (window.TABLE_CATEGORIES === undefined) {
+        return;
+    }
+
     var categorize = function ($tableNode, data) {
             var $table = $tableNode.DataTable(),
                 $tableBody = $tableNode.find('tbody'),
