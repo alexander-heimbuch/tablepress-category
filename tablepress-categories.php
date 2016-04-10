@@ -34,6 +34,9 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
  */
 class TablePress_Category {
 
+    protected static $slug = 'tablepress-category';
+    protected static $version = '0.1';
+
     const tableShortcode = 'category-table';
     const categoryShortcode = 'category';
 
@@ -45,15 +48,7 @@ class TablePress_Category {
         add_shortcode( TablePress_Category::categoryShortcode, array(  $this, 'shortcode_category_placeholder' ) );
         add_filter( 'tablepress_shortcode_table_default_shortcode_atts', array( $this, 'shortcode_table_default_shortcode_atts' ) );
         add_filter( 'tablepress_table_render_options', array( $this, 'table_render_options' ), 10, 2 );
-        $this->enqueue_script();
-    }
-
-    private function enqueue_script () {
-        $script = plugins_url( 'tablepress-categories.js', __FILE__ );
-        $style = plugins_url( 'tablepress-categories.css', __FILE__ );
-
-        wp_enqueue_script( 'tablepress-categories', $script, array( 'tablepress-datatables' ), false, true );
-        wp_enqueue_style( 'tablepress-categories', $style);
+        add_filter( 'tablepress_table_js_options', array( __CLASS__, 'table_js_options' ), 10, 3 );
     }
 
     public static function shortcode_table_default_shortcode_atts( $default_atts ) {
@@ -70,6 +65,19 @@ class TablePress_Category {
         $render_options['use_datatables'] = true;
 
         return $render_options;
+    }
+
+    public static function table_js_options( $js_options, $table_id, $render_options ) {
+        if( $render_options['category-table'] !== true) {
+            return $js_options;
+        }
+
+        $js_options['category-table'] = true;
+
+        wp_enqueue_script( self::$slug, plugins_url( 'tablepress-categories.js', __FILE__ ), array( 'tablepress-datatables' ), self::$version, true );
+        wp_enqueue_style( self::$slug, plugins_url( 'tablepress-categories.css', __FILE__ ));
+
+        return $js_options;
     }
 
     public function shortcode_table( $atts, $content ) {
