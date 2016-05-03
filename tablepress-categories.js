@@ -1,10 +1,6 @@
 (function ($) {
     'use strict';
 
-    if (window.TABLE_CATEGORIES === undefined) {
-        return;
-    }
-
     var categorize = function ($tableNode, data) {
             var $table = $tableNode.DataTable(),
                 $tableBody = $tableNode.find('tbody'),
@@ -41,12 +37,18 @@
 
             $tableBody.remove();
         };
+    
+    $(document).ready(function () {
+        if (window.TABLE_CATEGORIES === undefined) {
+            return;
+        }
+            
+        $.each(window.TABLE_CATEGORIES, function (tableId, data) {
+            var $table = $('#' + tableId);
 
-    $.each(window.TABLE_CATEGORIES, function (tableId, data) {
-        var $table = $('#' + tableId);
-
-        $table.on( 'draw.dt', function () {
-            categorize($table, data);
+            $table.on( 'draw.dt', function () {
+                categorize($table, data);
+            });
         });
     });
 })(jQuery);
